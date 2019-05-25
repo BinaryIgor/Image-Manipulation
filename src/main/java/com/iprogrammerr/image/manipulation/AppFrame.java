@@ -1,15 +1,19 @@
 package com.iprogrammerr.image.manipulation;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 public class AppFrame extends JFrame {
 
     private static final String IMAGE = "IMAGE";
     private static final String POSITION = "POSITION";
     private final BufferedImage image;
-    private ImagePanel imagePanel;
+    private PositioningPanel positioningPanel;
     private JButton upButton;
     private JButton rotateRightButton;
     private JButton rotateLeftButton;
@@ -29,11 +33,10 @@ public class AppFrame extends JFrame {
     public void init() {
         Dimension rootSize = new Dimension(800, 600);
         setMinimumSize(rootSize);
-        imagePanel = new ImagePanel();
+        positioningPanel = new PositioningPanel();
 
         JPanel controlPanel = new JPanel();
         controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        controlPanel.setBackground(Color.darkGray);
         GridLayout layout = new GridLayout(3, 3);
         layout.setHgap(10);
         layout.setVgap(10);
@@ -60,8 +63,8 @@ public class AppFrame extends JFrame {
         c.gridheight = 2;
         c.gridx = 0;
         c.gridy = 0;
-        imagePanel.setImage(image);
-        add(imagePanel, c);
+        positioningPanel.setImage(image);
+        add(positioningPanel, c);
         c.weightx = 0.5;
         c.weighty = 1;
         c.gridheight = 1;
@@ -75,6 +78,7 @@ public class AppFrame extends JFrame {
         c.gridwidth = 1;
         c.gridx = 1;
         c.gridy = 1;
+        c.insets = new Insets(0, 10, 10, 10);
         add(choosePictureButton, c);
 
         c.gridx = 2;
@@ -94,7 +98,32 @@ public class AppFrame extends JFrame {
         plusButton = new JButton("+");
         choosePictureButton = new JButton("Choose picture");
         stateButton = new JButton(POSITION);
+
+        upButton.addActionListener(e -> positioningPanel.moveUp());
+        leftButton.addActionListener(e -> positioningPanel.moveLeft());
+        centerButton.addActionListener(e -> positioningPanel.center());
+        rightButton.addActionListener(e -> positioningPanel.moveRight());
+        minusButton.addActionListener(e -> positioningPanel.zoomOut());
+        downButton.addActionListener(e -> positioningPanel.moveDown());
+        plusButton.addActionListener(e -> positioningPanel.zoomIn());
+        choosePictureButton.addActionListener(e -> showFileChooser());
     }
+
+    private void showFileChooser() {
+        JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
+        chooser.setFileFilter(new FileNameExtensionFilter("Pictures", "jpg", "png", "jpeg"));
+        int result = chooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selected = chooser.getSelectedFile();
+            try {
+                positioningPanel.setImage(ImageIO.read(selected));
+            } catch (Exception e) {
+                e.printStackTrace();
+                //TODO error handling
+            }
+        }
+    }
+
 
     @Override
     public void paintComponents(Graphics g) {
