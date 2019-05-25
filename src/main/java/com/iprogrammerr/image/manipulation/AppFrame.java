@@ -25,6 +25,7 @@ public class AppFrame extends JFrame {
     private JButton plusButton;
     private JButton choosePictureButton;
     private JButton stateButton;
+    private boolean positionState;
 
     public AppFrame(BufferedImage image) {
         this.image = image;
@@ -100,15 +101,49 @@ public class AppFrame extends JFrame {
         stateButton = new JButton(POSITION);
 
         rotateLeftButton.addActionListener(e -> positioningPanel.rotateLeft());
-        upButton.addActionListener(e -> positioningPanel.moveUp());
+        upButton.addActionListener(e -> {
+            if (positionState) {
+                positioningPanel.moveTargetUp();
+            } else {
+                positioningPanel.moveUp();
+            }
+        });
         rotateRightButton.addActionListener(e -> positioningPanel.rotateRight());
-        leftButton.addActionListener(e -> positioningPanel.moveLeft());
-        centerButton.addActionListener(e -> positioningPanel.center());
-        rightButton.addActionListener(e -> positioningPanel.moveRight());
+        leftButton.addActionListener(e -> {
+            if (positionState) {
+                positioningPanel.moveTargetLeft();
+            } else {
+                positioningPanel.moveLeft();
+            }
+        });
+        centerButton.addActionListener(e -> {
+            if (positionState) {
+                positioningPanel.centerTarget();
+            } else {
+                positioningPanel.center();
+            }
+        });
+        rightButton.addActionListener(e -> {
+            if (positionState) {
+                positioningPanel.moveTargetRight();
+            } else {
+                positioningPanel.moveRight();
+            }
+        });
         minusButton.addActionListener(e -> positioningPanel.zoomOut());
-        downButton.addActionListener(e -> positioningPanel.moveDown());
+        downButton.addActionListener(e -> {
+            if (positionState) {
+                positioningPanel.moveTargetDown();
+            } else {
+                positioningPanel.moveDown();
+            }
+        });
         plusButton.addActionListener(e -> positioningPanel.zoomIn());
         choosePictureButton.addActionListener(e -> showFileChooser());
+        stateButton.addActionListener(e -> {
+            positionState = !positionState;
+            stateButton.setText(positionState ? IMAGE : POSITION);
+        });
     }
 
     private void showFileChooser() {
