@@ -99,7 +99,9 @@ public class AppFrame extends JFrame {
         choosePictureButton = new JButton("Choose picture");
         stateButton = new JButton(POSITION);
 
+        rotateLeftButton.addActionListener(e -> positioningPanel.rotateLeft());
         upButton.addActionListener(e -> positioningPanel.moveUp());
+        rotateRightButton.addActionListener(e -> positioningPanel.rotateRight());
         leftButton.addActionListener(e -> positioningPanel.moveLeft());
         centerButton.addActionListener(e -> positioningPanel.center());
         rightButton.addActionListener(e -> positioningPanel.moveRight());

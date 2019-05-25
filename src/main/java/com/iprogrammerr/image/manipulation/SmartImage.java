@@ -20,21 +20,27 @@ public class SmartImage {
         this(image, null);
     }
 
-    public SmartImage transformed(int width, int height, double dx, double dy) {
+    public BufferedImage scaled(int width, int height) {
         BufferedImage image;
-        AffineTransform at = null;
-        if (shouldTransform(width, height, dx, dy)) {
-            BufferedImage after = new BufferedImage(width, height, source.getType());
-            at = new AffineTransform();
+        if (width != source.getWidth() || height != source.getHeight()) {
+            BufferedImage after = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            AffineTransform at = new AffineTransform();
             double scale = ((double) width) / source.getWidth();
-            at.translate(-dx, -dy);
             at.scale(scale, scale);
             AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
             image = scaleOp.filter(source, after);
         } else {
             image = source;
         }
-        return new SmartImage(image, at);
+        return image;
+    }
+
+    public BufferedImage rotated(double angle, int frameWidth, int frameHeight) {
+        BufferedImage after = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        AffineTransform at = new AffineTransform();
+        at.rotate(angle, frameWidth / 2, frameHeight / 2);
+        AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
+        return scaleOp.filter(source, after);
     }
 
     private boolean shouldTransform(int width, int height, double dx, double dy) {
