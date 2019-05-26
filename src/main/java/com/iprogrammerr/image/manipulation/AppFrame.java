@@ -36,7 +36,7 @@ public class AppFrame extends JFrame {
     }
 
     public void init() {
-        Dimension rootSize = new Dimension(1000, 750);
+        Dimension rootSize = new Dimension(1200, 600);
         setMinimumSize(rootSize);
         setPreferredSize(rootSize);
         positioningPanel = new PositioningPanel();

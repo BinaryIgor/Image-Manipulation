@@ -112,7 +112,7 @@ public class PositioningPanel extends JPanel {
     }
 
     private int startX(int width) {
-        return (getWidth() - width) / 2 - dx;
+        return (getWidth() - width) / 2 + dx;
     }
 
     private int startX() {
@@ -120,7 +120,7 @@ public class PositioningPanel extends JPanel {
     }
 
     private int startY(int height) {
-        return (getHeight() - height) / 2 - dy;
+        return (getHeight() - height) / 2 + dy;
     }
 
     private int startY() {
@@ -233,12 +233,21 @@ public class PositioningPanel extends JPanel {
         }
         double xTranslation = currentTransform.getTranslateX();
         double yTranslation = currentTransform.getTranslateY();
-        System.out.println(String.format("Translations = %.3f, %.3f", xTranslation, yTranslation));
-        System.out.println(String.format("Scales = %.3f, %.3f", currentTransform.getScaleX(),
-            currentTransform.getScaleY()));
-        double x = (targetX + targetCenterX() - xTranslation) / currentTransform.getScaleX();
-        double y = (targetY + targetCenterY() - yTranslation) / currentTransform.getScaleY();
-        return new Point2d(x, y);
+        double x = (targetX + targetCenterX() - xTranslation) / scale;
+        double y = (targetY + targetCenterY() - yTranslation) / scale;
+        Point2d position;
+        if (Math.abs(rotationAngle) > 0) {
+            position = rotated(x, y);
+        } else {
+            position = new Point2d(x, y);
+        }
+        return position;
+    }
+
+    private Point2d rotated(double x, double y) {
+        double cos = Math.cos(-rotationAngle);
+        double sin = Math.sin(-rotationAngle);
+        return new Point2d(x * cos - y * sin, x * sin + y * cos);
     }
 
     public void setImage(BufferedImage image) {

@@ -11,7 +11,7 @@ public class AppTest {
     @Test
     public void shouldAnswerWithTrue() {
         Vector2d vector = new Vector2d(-1, 0);
-        double angle = Math.toRadians(-45);
+        double angle = Math.toRadians(45);
         System.out.println(vector);
         System.out.println(rotated(vector.x, vector.y, angle));
         Matrix4d matrix = new Matrix4d();
