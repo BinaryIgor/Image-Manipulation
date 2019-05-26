@@ -11,19 +11,15 @@ import java.io.InputStream;
 public class PositioningPanel extends JPanel {
 
     private static final AffineTransform EMPTY_TRANSFORM = new AffineTransform();
-    private static final double SCALE_DIVISOR = 1.1;
-    private static final double HALF_DIVISOR = 2;
     private static final double XY_STEPS = 20;
     private static final double TARGET_XY_STEPS = 2 * XY_STEPS;
-    private static final double MAX_ANGLE = Math.toRadians(360);
-    private static final double MIN_ANGLE = -MAX_ANGLE;
-    private static final double ROTATION_STEP = MAX_ANGLE / 36;
+    private static final double ROTATION_STEP = Math.toRadians(360) / 36;
     private final double minScale;
     private final double maxScale;
     private final double scaleMultiplier;
     private BufferedImage target;
     private BufferedImage image;
-    private double scale = 1;
+    private double scale;
     private int dx;
     private int dy;
     private int targetY;
@@ -39,7 +35,7 @@ public class PositioningPanel extends JPanel {
     }
 
     public PositioningPanel() {
-        this(0.1, 3, 1.25);
+        this(0.25, 4, 1.25);
     }
 
     @Override
@@ -56,7 +52,9 @@ public class PositioningPanel extends JPanel {
         g2d.translate(startX, startY);
         g2d.scale(scale, scale);
         if (Math.abs(rotationAngle) > 0) {
-            g2d.rotate(rotationAngle, image.getWidth() / HALF_DIVISOR, image.getHeight() / HALF_DIVISOR);
+            double anchorX = image.getWidth() / 2d;
+            double anchorY = image.getHeight() / 2d;
+            g2d.rotate(rotationAngle, anchorX, anchorY);
         }
         g2d.drawImage(image, 0, 0, null);
         currentTransform = g2d.getTransform();
@@ -87,14 +85,6 @@ public class PositioningPanel extends JPanel {
         g.drawImage(target, targetX, targetY, null);
     }
 
-    private int targetX() {
-        return targetX + (getWidth() / 2);
-    }
-
-    private int targetY() {
-        return targetY + (getHeight() / 2);
-    }
-
     private int targetCenterX() {
         return target.getWidth() / 2;
     }
@@ -115,16 +105,8 @@ public class PositioningPanel extends JPanel {
         return (getWidth() - width) / 2 + dx;
     }
 
-    private int startX() {
-        return startX(nextWidth());
-    }
-
     private int startY(int height) {
         return (getHeight() - height) / 2 + dy;
-    }
-
-    private int startY() {
-        return startY(nextHeight());
     }
 
     public void moveUp() {
@@ -223,18 +205,8 @@ public class PositioningPanel extends JPanel {
     }
 
     public Point2d positionOnImage() {
-        double frameImageScaleX = 1;
-        double frameImageScaleY = 1;
-        while (getWidth() < (image.getWidth() * frameImageScaleX)) {
-            frameImageScaleX /= SCALE_DIVISOR;
-        }
-        while (getHeight() < (image.getHeight() * frameImageScaleY)) {
-            frameImageScaleY /= SCALE_DIVISOR;
-        }
-        double xTranslation = currentTransform.getTranslateX();
-        double yTranslation = currentTransform.getTranslateY();
-        double x = (targetX + targetCenterX() - xTranslation) / scale;
-        double y = (targetY + targetCenterY() - yTranslation) / scale;
+        double x = (targetX + targetCenterX() - currentTransform.getTranslateX()) / scale;
+        double y = (targetY + targetCenterY() - currentTransform.getTranslateY()) / scale;
         Point2d position;
         if (Math.abs(rotationAngle) > 0) {
             position = rotated(x, y);

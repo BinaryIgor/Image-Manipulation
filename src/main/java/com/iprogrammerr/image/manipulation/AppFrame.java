@@ -12,9 +12,11 @@ import java.io.File;
 public class AppFrame extends JFrame {
 
     private static final String COORDINATES_TITLE = "Coordinates";
-    private static final String COORDINATES_FORMAT = "Current coordinates: %g px, %g px";
+    private static final String COORDINATES_FORMAT = "Current coordinates: %d px, %d px";
     private static final String STATE_IMAGE = "State: image";
     private static final String STATE_POSITION = "State: position";
+    private static final String ERROR_TITLE = "Error";
+    private static final String READING_IMAGE_ERROR_FORMAT = "Can't read %s file as image";
     private final BufferedImage image;
     private PositioningPanel positioningPanel;
     private JButton upButton;
@@ -144,7 +146,8 @@ public class AppFrame extends JFrame {
         });
         coordinatesButton.addActionListener(e -> {
             Point2d coords = positioningPanel.positionOnImage();
-            JOptionPane.showMessageDialog(this, String.format(COORDINATES_FORMAT, coords.x, coords.y),
+            JOptionPane.showMessageDialog(this, String.format(COORDINATES_FORMAT,
+                (int) coords.x, (int) coords.y),
                 COORDINATES_TITLE, JOptionPane.INFORMATION_MESSAGE);
         });
     }
@@ -158,15 +161,10 @@ public class AppFrame extends JFrame {
             try {
                 positioningPanel.setImage(ImageIO.read(selected));
             } catch (Exception e) {
-                e.printStackTrace();
-                //TODO error handling
+                JOptionPane.showMessageDialog(this,
+                    String.format(READING_IMAGE_ERROR_FORMAT, selected.getAbsolutePath()),
+                    ERROR_TITLE, JOptionPane.ERROR_MESSAGE);
             }
         }
-    }
-
-
-    @Override
-    public void paintComponents(Graphics g) {
-        super.paintComponents(g);
     }
 }
