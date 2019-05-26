@@ -228,8 +228,18 @@ public class PositioningPanel extends JPanel {
     }
 
     public Point2d positionOnImage() {
-        double x = (targetX() + targetCenterX());
-        double y = (targetY() + targetCenterY());
+        double frameImageScaleX = 1;
+        double frameImageScaleY = 1;
+        while (getWidth() < (image.getWidth() * frameImageScaleX)) {
+            frameImageScaleX /= SCALE_DIVISOR;
+        }
+        while (getHeight() < (image.getHeight() * frameImageScaleY)) {
+            frameImageScaleY /= SCALE_DIVISOR;
+        }
+        double xTranslation = currentTransform.getTranslateX();
+        double yTranslation = currentTransform.getTranslateY();
+        double x = targetX - xTranslation;
+        double y = targetY - yTranslation;
         return new Point2d(x, y);
     }
 
