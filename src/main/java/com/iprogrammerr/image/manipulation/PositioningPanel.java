@@ -21,7 +21,8 @@ public class PositioningPanel extends JPanel {
     private final double minScale;
     private final double maxScale;
     private final double scaleMultiplier;
-    private final Initialization<BufferedImage> target;
+    private BufferedImage target;
+    private BufferedImage image;
     private double scale = 1;
     private int dx;
     private int dy;
@@ -29,18 +30,12 @@ public class PositioningPanel extends JPanel {
     private int targetX;
     private boolean centerTarget;
     private double rotationAngle;
-    private BufferedImage image;
     private AffineTransform currentTransform;
 
     public PositioningPanel(double minScale, double maxScale, double scaleMultiplier) {
         this.minScale = minScale;
         this.maxScale = maxScale;
         this.scaleMultiplier = scaleMultiplier;
-        this.target = new Initialization<>(() -> {
-            try (InputStream is = PositioningPanel.class.getResourceAsStream("/position.png")) {
-                return ImageIO.read(is);
-            }
-        });
     }
 
     public PositioningPanel() {
@@ -51,7 +46,7 @@ public class PositioningPanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (image == null) {
-            return;
+            throw new RuntimeException("Cannot draw null image");
         }
         int width = nextWidth();
         int height = nextHeight();
@@ -74,14 +69,14 @@ public class PositioningPanel extends JPanel {
             targetX = targetCenterX() + (getWidth() / 2);
             targetY = targetCenterY() + (getHeight() / 2);
         } else {
-            int targetWidth = target.value().getWidth();
+            int targetWidth = target.getWidth();
             int halfWidth = targetWidth / 2;
             if (targetX + halfWidth > getWidth()) {
                 targetX = getWidth() - halfWidth;
             } else if (targetX + halfWidth < 0) {
                 targetX = -halfWidth;
             }
-            int targetHeight = target.value().getHeight();
+            int targetHeight = target.getHeight();
             int halfHeight = targetHeight / 2;
             if (targetY + halfHeight > getHeight()) {
                 targetY = getHeight() - halfHeight;
@@ -89,7 +84,7 @@ public class PositioningPanel extends JPanel {
                 targetY = -halfHeight;
             }
         }
-        g.drawImage(target.value(), targetX, targetY, null);
+        g.drawImage(target, targetX, targetY, null);
     }
 
     private int targetX() {
@@ -101,11 +96,11 @@ public class PositioningPanel extends JPanel {
     }
 
     private int targetCenterX() {
-        return target.value().getWidth() / 2;
+        return target.getWidth() / 2;
     }
 
     private int targetCenterY() {
-        return target.value().getHeight() / 2;
+        return target.getHeight() / 2;
     }
 
     private int nextWidth() {
@@ -245,11 +240,22 @@ public class PositioningPanel extends JPanel {
 
     public void setImage(BufferedImage image) {
         this.image = image;
-        dx = 0;
-        dy = 0;
-        scale = 1;
-        rotationAngle = 0;
-        centerTarget = true;
+        this.dx = 0;
+        this.dy = 0;
+        this.scale = 1;
+        this.rotationAngle = 0;
+        this.centerTarget = true;
+        loadTargetImage();
         repaint();
+    }
+
+    private void loadTargetImage() {
+        if (target == null) {
+            try (InputStream is = PositioningPanel.class.getResourceAsStream("/position.png")) {
+                target = ImageIO.read(is);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }
