@@ -233,8 +233,11 @@ public class PositioningPanel extends JPanel {
         }
         double xTranslation = currentTransform.getTranslateX();
         double yTranslation = currentTransform.getTranslateY();
-        double x = targetX - xTranslation;
-        double y = targetY - yTranslation;
+        System.out.println(String.format("Translations = %.3f, %.3f", xTranslation, yTranslation));
+        System.out.println(String.format("Scales = %.3f, %.3f", currentTransform.getScaleX(),
+            currentTransform.getScaleY()));
+        double x = (targetX + targetCenterX() - xTranslation) / currentTransform.getScaleX();
+        double y = (targetY + targetCenterY() - yTranslation) / currentTransform.getScaleY();
         return new Point2d(x, y);
     }
 
