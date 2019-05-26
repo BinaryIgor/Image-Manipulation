@@ -4,12 +4,15 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
+import javax.vecmath.Point2d;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class AppFrame extends JFrame {
 
+    private static final String COORDINATES_TITLE = "Coordinates";
+    private static final String COORDINATES_FORMAT = "Current coordinates: %g px, %g px";
     private static final String IMAGE = "IMAGE";
     private static final String POSITION = "POSITION";
     private final BufferedImage image;
@@ -25,6 +28,7 @@ public class AppFrame extends JFrame {
     private JButton plusButton;
     private JButton choosePictureButton;
     private JButton stateButton;
+    private JButton coordinatesButton;
     private boolean positionState;
 
     public AppFrame(BufferedImage image) {
@@ -38,7 +42,8 @@ public class AppFrame extends JFrame {
 
         JPanel controlPanel = new JPanel();
         controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        GridLayout layout = new GridLayout(3, 3);
+        controlPanel.setBackground(Color.darkGray);
+        GridLayout layout = new GridLayout(4, 3);
         layout.setHgap(10);
         layout.setVgap(10);
 
@@ -53,6 +58,9 @@ public class AppFrame extends JFrame {
         controlPanel.add(minusButton);
         controlPanel.add(downButton);
         controlPanel.add(plusButton);
+        controlPanel.add(choosePictureButton);
+        controlPanel.add(stateButton);
+        controlPanel.add(coordinatesButton);
 
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -73,18 +81,6 @@ public class AppFrame extends JFrame {
         c.gridx = 1;
         c.gridy = 0;
         add(controlPanel, c);
-
-        c.weightx = 0.25;
-        c.weighty = 0.25;
-        c.gridwidth = 1;
-        c.gridx = 1;
-        c.gridy = 1;
-        c.insets = new Insets(0, 10, 10, 10);
-        add(choosePictureButton, c);
-
-        c.gridx = 2;
-        c.gridy = 1;
-        add(stateButton, c);
     }
 
     private void setButtons() {
@@ -99,6 +95,7 @@ public class AppFrame extends JFrame {
         plusButton = new JButton("+");
         choosePictureButton = new JButton("Choose picture");
         stateButton = new JButton(POSITION);
+        coordinatesButton = new JButton("Read coordinates");
 
         rotateLeftButton.addActionListener(e -> positioningPanel.rotateLeft());
         upButton.addActionListener(e -> {
@@ -143,6 +140,11 @@ public class AppFrame extends JFrame {
         stateButton.addActionListener(e -> {
             positionState = !positionState;
             stateButton.setText(positionState ? IMAGE : POSITION);
+        });
+        coordinatesButton.addActionListener(e -> {
+            Point2d coords = positioningPanel.positionOnImage();
+            JOptionPane.showMessageDialog(this, String.format(COORDINATES_FORMAT, coords.x, coords.y),
+                COORDINATES_TITLE, JOptionPane.INFORMATION_MESSAGE);
         });
     }
 

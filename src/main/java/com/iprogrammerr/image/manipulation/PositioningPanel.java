@@ -13,7 +13,7 @@ public class PositioningPanel extends JPanel {
 
     private static final double SCALE_DIVISOR = 1.1;
     private static final double XY_STEPS = 20;
-    private static final double TARGET_XY_STEPS = 2 * XY_STEPS;
+    private static final double TARGET_XY_STEPS = 0.5 * XY_STEPS;
     private static final double MAX_ANGLE = Math.toRadians(360);
     private static final double MIN_ANGLE = -MAX_ANGLE;
     private static final double ROTATION_STEP = MAX_ANGLE / 36;
@@ -28,6 +28,7 @@ public class PositioningPanel extends JPanel {
     private int targetX;
     private double rotationAngle;
     private BufferedImage image;
+    private AffineTransform currentTransform;
 
     public PositioningPanel(double minScale, double maxScale, double scaleMultiplier) {
         this.minScale = minScale;
@@ -54,24 +55,29 @@ public class PositioningPanel extends JPanel {
         int height = nextHeight();
         int startX = startX(width);
         int startY = startY(height);
-        BufferedImage scaled = new SmartImage(image).scaled(width, height);
         Graphics2D g2d = (Graphics2D) g;
         if (Math.abs(rotationAngle) > 0) {
             Point2d translation = translation();
             g2d.rotate(rotationAngle, translation.x, translation.y);
         }
-        Vector2d startXY = startXY(width, height);
-        g2d.translate(startX, startY);
-        System.out.println(String.format("Start x = %d, start y = %d", startX, startY));
-        System.out.println(String.format("Translation x = %.3f, translation y = %.3f",
-            g2d.getTransform().getTranslateX(), g2d.getTransform().getTranslateY()));
-        g2d.drawImage(scaled, 0, 0, null);
+        g2d.translate(startX - dx, startY - dy);
+        g2d.scale(scale, scale);
+        g2d.drawImage(image, 0, 0, null);
+        currentTransform = g2d.getTransform();
         drawTarget(g2d);
     }
 
     private void drawTarget(Graphics2D g) {
         g.setTransform(new AffineTransform());
-        g.drawImage(target.value(), targetX + (getWidth() / 2), targetY + (getHeight() / 2), null);
+        g.drawImage(target.value(), targetX(), targetY(), null);
+    }
+
+    private int targetX() {
+        return targetX + (getWidth() / 2);
+    }
+
+    private int targetY() {
+        return targetY + (getHeight() / 2);
     }
 
     private int targetCenterX() {
@@ -94,18 +100,16 @@ public class PositioningPanel extends JPanel {
         return (int) Math.round(image.getHeight() * scale);
     }
 
-    private Vector2d startXY(int width, int height) {
-        double x = (getWidth() - width) / 2;
-        double y = (getHeight() - height) / 2;
+    private Vector2d xyOffset() {
         double cos = Math.cos(rotationAngle);
         double sin = Math.sin(rotationAngle);
         double translatedDx = dx * cos - dy * sin;
         double translatedDy = dx * sin + dy * cos;
-        return new Vector2d(x - dx, y - dy);
+        return new Vector2d(translatedDx, translatedDy);
     }
 
     private int startX(int width) {
-        return (getWidth() - width) / 2 - dx;
+        return (getWidth() - width) / 2;
     }
 
     private int startX() {
@@ -113,7 +117,7 @@ public class PositioningPanel extends JPanel {
     }
 
     private int startY(int height) {
-        return (getHeight() - height) / 2 - dy;
+        return (getHeight() - height) / 2;
     }
 
     private int startY() {
@@ -157,8 +161,6 @@ public class PositioningPanel extends JPanel {
     public void zoomOut() {
         if (scale > minScale) {
             scale /= scaleMultiplier;
-//            dx *= scale;
-//            dy *= scale;
             repaint();
         }
     }
@@ -176,8 +178,6 @@ public class PositioningPanel extends JPanel {
     public void zoomIn() {
         if (scale < maxScale) {
             scale *= scaleMultiplier;
-//            dx /= scale;
-//            dy /= scale;
             repaint();
         }
     }
@@ -214,6 +214,12 @@ public class PositioningPanel extends JPanel {
         targetX = 0;
         targetY = 0;
         repaint();
+    }
+
+    public Point2d positionOnImage() {
+        double x = (targetX() + targetCenterX() - currentTransform.getTranslateX()) / scale;
+        double y = (targetY() + targetCenterY() - currentTransform.getTranslateY()) / scale;
+        return new Point2d(x, y);
     }
 
     public void setImage(BufferedImage image) {

@@ -35,10 +35,10 @@ public class SmartImage {
         return image;
     }
 
-    public BufferedImage rotated(double angle, int frameWidth, int frameHeight) {
+    public BufferedImage rotated(double angle) {
         BufferedImage after = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_ARGB);
         AffineTransform at = new AffineTransform();
-        at.rotate(angle, frameWidth / 2, frameHeight / 2);
+        at.rotate(angle);
         AffineTransformOp scaleOp = new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
         return scaleOp.filter(source, after);
     }
