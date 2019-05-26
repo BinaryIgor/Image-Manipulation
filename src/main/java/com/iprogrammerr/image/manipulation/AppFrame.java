@@ -13,8 +13,8 @@ public class AppFrame extends JFrame {
 
     private static final String COORDINATES_TITLE = "Coordinates";
     private static final String COORDINATES_FORMAT = "Current coordinates: %g px, %g px";
-    private static final String IMAGE = "IMAGE";
-    private static final String POSITION = "POSITION";
+    private static final String STATE_IMAGE = "State: image";
+    private static final String STATE_POSITION = "State: position";
     private final BufferedImage image;
     private PositioningPanel positioningPanel;
     private JButton upButton;
@@ -94,7 +94,7 @@ public class AppFrame extends JFrame {
         downButton = new JButton("Down");
         plusButton = new JButton("+");
         choosePictureButton = new JButton("Choose picture");
-        stateButton = new JButton(POSITION);
+        stateButton = new JButton(STATE_IMAGE);
         coordinatesButton = new JButton("Read coordinates");
 
         rotateLeftButton.addActionListener(e -> positioningPanel.rotateLeft());
@@ -139,7 +139,7 @@ public class AppFrame extends JFrame {
         choosePictureButton.addActionListener(e -> showFileChooser());
         stateButton.addActionListener(e -> {
             positionState = !positionState;
-            stateButton.setText(positionState ? IMAGE : POSITION);
+            stateButton.setText(positionState ? STATE_POSITION : STATE_IMAGE);
         });
         coordinatesButton.addActionListener(e -> {
             Point2d coords = positioningPanel.positionOnImage();

@@ -10,10 +10,11 @@ import java.io.InputStream;
 
 public class PositioningPanel extends JPanel {
 
+    private static final AffineTransform EMPTY_TRANSFORM = new AffineTransform();
     private static final double SCALE_DIVISOR = 1.1;
     private static final double HALF_DIVISOR = 2;
     private static final double XY_STEPS = 20;
-    private static final double TARGET_XY_STEPS = 1 * XY_STEPS;
+    private static final double TARGET_XY_STEPS = 2 * XY_STEPS;
     private static final double MAX_ANGLE = Math.toRadians(360);
     private static final double MIN_ANGLE = -MAX_ANGLE;
     private static final double ROTATION_STEP = MAX_ANGLE / 36;
@@ -26,6 +27,7 @@ public class PositioningPanel extends JPanel {
     private int dy;
     private int targetY;
     private int targetX;
+    private boolean centerTarget;
     private double rotationAngle;
     private BufferedImage image;
     private AffineTransform currentTransform;
@@ -67,8 +69,27 @@ public class PositioningPanel extends JPanel {
     }
 
     private void drawTarget(Graphics2D g) {
-        g.setTransform(new AffineTransform());
-        g.drawImage(target.value(), targetX(), targetY(), null);
+        g.setTransform(EMPTY_TRANSFORM);
+        if (centerTarget) {
+            targetX = targetCenterX() + (getWidth() / 2);
+            targetY = targetCenterY() + (getHeight() / 2);
+        } else {
+            int targetWidth = target.value().getWidth();
+            int halfWidth = targetWidth / 2;
+            if (targetX + halfWidth > getWidth()) {
+                targetX = getWidth() - halfWidth;
+            } else if (targetX + halfWidth < 0) {
+                targetX = -halfWidth;
+            }
+            int targetHeight = target.value().getHeight();
+            int halfHeight = targetHeight / 2;
+            if (targetY + halfHeight > getHeight()) {
+                targetY = getHeight() - halfHeight;
+            } else if (targetY + halfHeight < 0) {
+                targetY = -halfHeight;
+            }
+        }
+        g.drawImage(target.value(), targetX, targetY, null);
     }
 
     private int targetX() {
@@ -171,6 +192,7 @@ public class PositioningPanel extends JPanel {
 
     public void moveTargetUp() {
         targetY -= targetMoveY();
+        centerTarget = false;
         repaint();
     }
 
@@ -180,11 +202,13 @@ public class PositioningPanel extends JPanel {
 
     public void moveTargetDown() {
         targetY += targetMoveY();
+        centerTarget = false;
         repaint();
     }
 
     public void moveTargetLeft() {
         targetX -= targetMoveX();
+        centerTarget = false;
         repaint();
     }
 
@@ -194,18 +218,18 @@ public class PositioningPanel extends JPanel {
 
     public void moveTargetRight() {
         targetX += targetMoveX();
+        centerTarget = false;
         repaint();
     }
 
     public void centerTarget() {
-        targetX = 0;
-        targetY = 0;
+        centerTarget = true;
         repaint();
     }
 
     public Point2d positionOnImage() {
-        double x = (targetX() + targetCenterX() + currentTransform.getTranslateX()) / scale;
-        double y = (targetY() + targetCenterY() + currentTransform.getTranslateY()) / scale;
+        double x = (targetX() + targetCenterX());
+        double y = (targetY() + targetCenterY());
         return new Point2d(x, y);
     }
 
@@ -215,8 +239,7 @@ public class PositioningPanel extends JPanel {
         dy = 0;
         scale = 1;
         rotationAngle = 0;
-        targetX = targetCenterX();
-        targetY = targetCenterY();
+        centerTarget = true;
         repaint();
     }
 }
