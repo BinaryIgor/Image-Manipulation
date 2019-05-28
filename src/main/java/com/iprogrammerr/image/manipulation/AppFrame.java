@@ -6,76 +6,166 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.vecmath.Point2d;
 import java.awt.*;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
 public class AppFrame extends JFrame {
 
+    private static final String TITLE = "Image manipulation";
     private static final String COORDINATES_TITLE = "Coordinates";
     private static final String COORDINATES_FORMAT = "Current coordinates: %d px, %d px";
     private static final String STATE_IMAGE = "State: image";
     private static final String STATE_POSITION = "State: position";
     private static final String ERROR_TITLE = "Error";
-    private static final String READING_IMAGE_ERROR_FORMAT = "Can't read %s file as image";
-    private final BufferedImage image;
+    private static final String READING_IMAGE_ERROR_FORMAT = "Can't read %s file as initialImage";
+    private final BufferedImage initialImage;
     private PositioningPanel positioningPanel;
-    private JButton upButton;
-    private JButton rotateRightButton;
-    private JButton rotateLeftButton;
-    private JButton leftButton;
-    private JButton centerButton;
-    private JButton rightButton;
-    private JButton minusButton;
-    private JButton downButton;
-    private JButton plusButton;
-    private JButton choosePictureButton;
-    private JButton stateButton;
-    private JButton coordinatesButton;
+    private JPanel controlPanel;
     private boolean positionState;
 
-    public AppFrame(BufferedImage image) {
-        this.image = image;
+    public AppFrame(BufferedImage initialImage) {
+        this.initialImage = initialImage;
     }
 
     public void init() {
+        setTitle(TITLE);
         Dimension rootSize = new Dimension(1200, 600);
         setMinimumSize(rootSize);
         setPreferredSize(rootSize);
-        positioningPanel = new PositioningPanel();
+        createPositioningPanel();
+        createControlPanel();
+        setLayout();
+    }
 
-        JPanel controlPanel = new JPanel();
+    private void createPositioningPanel() {
+        positioningPanel = new PositioningPanel();
+        positioningPanel.setImage(initialImage);
+    }
+
+    private void createControlPanel() {
+        controlPanel = new JPanel();
         controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         controlPanel.setBackground(Color.darkGray);
         GridLayout layout = new GridLayout(4, 3);
         layout.setHgap(10);
         layout.setVgap(10);
-
         controlPanel.setLayout(layout);
-        setButtons();
-        controlPanel.add(rotateLeftButton);
-        controlPanel.add(upButton);
-        controlPanel.add(rotateRightButton);
-        controlPanel.add(leftButton);
-        controlPanel.add(centerButton);
-        controlPanel.add(rightButton);
-        controlPanel.add(minusButton);
-        controlPanel.add(downButton);
-        controlPanel.add(plusButton);
-        controlPanel.add(choosePictureButton);
-        controlPanel.add(stateButton);
-        controlPanel.add(coordinatesButton);
+        controlPanel.add(rotateLeftButton());
+        controlPanel.add(upButton());
+        controlPanel.add(rotateRightButton());
+        controlPanel.add(leftButton());
+        controlPanel.add(centerButton());
+        controlPanel.add(rightButton());
+        controlPanel.add(minusButton());
+        controlPanel.add(downButton());
+        controlPanel.add(plusButton());
+        controlPanel.add(chooseImageButton());
+        controlPanel.add(stateButton());
+        controlPanel.add(readCoordinatesButton());
+    }
 
+    private JButton rotateLeftButton() {
+        return button("<", e -> positioningPanel.rotateLeft());
+    }
+
+    private JButton button(String text, ActionListener listener) {
+        JButton button = new JButton(text);
+        button.addActionListener(listener);
+        return button;
+    }
+
+    private JButton upButton() {
+        return button("Up", e -> {
+            if (positionState) {
+                positioningPanel.moveTargetUp();
+            } else {
+                positioningPanel.moveUp();
+            }
+        });
+    }
+
+    private JButton rotateRightButton() {
+        return button(">", e -> positioningPanel.rotateRight());
+    }
+
+    private JButton leftButton() {
+        return button("Left", e -> {
+            if (positionState) {
+                positioningPanel.moveTargetLeft();
+            } else {
+                positioningPanel.moveLeft();
+            }
+        });
+    }
+
+    private JButton centerButton() {
+        return button("Center", e -> {
+            if (positionState) {
+                positioningPanel.centerTarget();
+            } else {
+                positioningPanel.center();
+            }
+        });
+    }
+
+    private JButton rightButton() {
+        return button("Right", e -> {
+            if (positionState) {
+                positioningPanel.moveTargetRight();
+            } else {
+                positioningPanel.moveRight();
+            }
+        });
+    }
+
+    private JButton minusButton() {
+        return button("-", e -> positioningPanel.zoomOut());
+    }
+
+    private JButton downButton() {
+        return button("Down", e -> {
+            if (positionState) {
+                positioningPanel.moveTargetDown();
+            } else {
+                positioningPanel.moveDown();
+            }
+        });
+    }
+
+    private JButton plusButton() {
+        return button("+", e -> positioningPanel.zoomIn());
+    }
+
+    private JButton chooseImageButton() {
+        return button("Choose image", e -> showFileChooser());
+    }
+
+    private JButton stateButton() {
+        return button(STATE_IMAGE, e -> {
+            positionState = !positionState;
+            ((JButton) e.getSource()).setText(positionState ? STATE_POSITION : STATE_IMAGE);
+        });
+    }
+
+    private JButton readCoordinatesButton() {
+        return button("Read coordinates", e -> {
+            Point2d coordinates = positioningPanel.positionOnImage();
+            JOptionPane.showMessageDialog(this, String.format(COORDINATES_FORMAT,
+                (int) coordinates.x, (int) coordinates.y),
+                COORDINATES_TITLE, JOptionPane.INFORMATION_MESSAGE);
+        });
+    }
+
+    private void setLayout() {
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
-
         c.fill = GridBagConstraints.BOTH;
-
         c.weightx = 2;
         c.weighty = 2;
         c.gridheight = 2;
         c.gridx = 0;
         c.gridy = 0;
-        positioningPanel.setImage(image);
         add(positioningPanel, c);
         c.weightx = 0.5;
         c.weighty = 1;
@@ -86,71 +176,6 @@ public class AppFrame extends JFrame {
         add(controlPanel, c);
     }
 
-    private void setButtons() {
-        rotateLeftButton = new JButton("<");
-        upButton = new JButton("Up");
-        rotateRightButton = new JButton(">");
-        leftButton = new JButton("Left");
-        centerButton = new JButton("Center");
-        rightButton = new JButton("Right");
-        minusButton = new JButton("-");
-        downButton = new JButton("Down");
-        plusButton = new JButton("+");
-        choosePictureButton = new JButton("Choose picture");
-        stateButton = new JButton(STATE_IMAGE);
-        coordinatesButton = new JButton("Read coordinates");
-
-        rotateLeftButton.addActionListener(e -> positioningPanel.rotateLeft());
-        upButton.addActionListener(e -> {
-            if (positionState) {
-                positioningPanel.moveTargetUp();
-            } else {
-                positioningPanel.moveUp();
-            }
-        });
-        rotateRightButton.addActionListener(e -> positioningPanel.rotateRight());
-        leftButton.addActionListener(e -> {
-            if (positionState) {
-                positioningPanel.moveTargetLeft();
-            } else {
-                positioningPanel.moveLeft();
-            }
-        });
-        centerButton.addActionListener(e -> {
-            if (positionState) {
-                positioningPanel.centerTarget();
-            } else {
-                positioningPanel.center();
-            }
-        });
-        rightButton.addActionListener(e -> {
-            if (positionState) {
-                positioningPanel.moveTargetRight();
-            } else {
-                positioningPanel.moveRight();
-            }
-        });
-        minusButton.addActionListener(e -> positioningPanel.zoomOut());
-        downButton.addActionListener(e -> {
-            if (positionState) {
-                positioningPanel.moveTargetDown();
-            } else {
-                positioningPanel.moveDown();
-            }
-        });
-        plusButton.addActionListener(e -> positioningPanel.zoomIn());
-        choosePictureButton.addActionListener(e -> showFileChooser());
-        stateButton.addActionListener(e -> {
-            positionState = !positionState;
-            stateButton.setText(positionState ? STATE_POSITION : STATE_IMAGE);
-        });
-        coordinatesButton.addActionListener(e -> {
-            Point2d coords = positioningPanel.positionOnImage();
-            JOptionPane.showMessageDialog(this, String.format(COORDINATES_FORMAT,
-                (int) coords.x, (int) coords.y),
-                COORDINATES_TITLE, JOptionPane.INFORMATION_MESSAGE);
-        });
-    }
 
     private void showFileChooser() {
         JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());

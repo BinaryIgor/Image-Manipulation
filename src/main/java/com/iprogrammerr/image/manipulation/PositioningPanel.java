@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 public class PositioningPanel extends JPanel {
 
+    private static final double ZERO = 10e-6;
     private static final AffineTransform EMPTY_TRANSFORM = new AffineTransform();
     private static final double XY_STEPS = 20;
     private static final double TARGET_XY_STEPS = 2 * XY_STEPS;
@@ -17,8 +18,8 @@ public class PositioningPanel extends JPanel {
     private final double minScale;
     private final double maxScale;
     private final double scaleMultiplier;
-    private BufferedImage target;
     private BufferedImage image;
+    private BufferedImage target;
     private double scale;
     private int dx;
     private int dy;
@@ -34,8 +35,12 @@ public class PositioningPanel extends JPanel {
         this.scaleMultiplier = scaleMultiplier;
     }
 
+    public PositioningPanel(double minScale, double maxScale) {
+        this(minScale, maxScale, 1.25);
+    }
+
     public PositioningPanel() {
-        this(0.25, 4, 1.25);
+        this(0.25, 4);
     }
 
     @Override
@@ -51,7 +56,7 @@ public class PositioningPanel extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         g2d.translate(startX, startY);
         g2d.scale(scale, scale);
-        if (Math.abs(rotationAngle) > 0) {
+        if (Math.abs(rotationAngle) > ZERO) {
             double anchorX = image.getWidth() / 2d;
             double anchorY = image.getHeight() / 2d;
             g2d.rotate(rotationAngle, anchorX, anchorY);
@@ -64,8 +69,8 @@ public class PositioningPanel extends JPanel {
     private void drawTarget(Graphics2D g) {
         g.setTransform(EMPTY_TRANSFORM);
         if (centerTarget) {
-            targetX = targetCenterX() + (getWidth() / 2);
-            targetY = targetCenterY() + (getHeight() / 2);
+            targetX = (getWidth() / 2) - targetCenterX();
+            targetY = (getHeight() / 2) - targetCenterY();
         } else {
             int targetWidth = target.getWidth();
             int halfWidth = targetWidth / 2;

@@ -6,9 +6,9 @@
 
     <groupId>com.iprogrammerr</groupId>
     <artifactId>image-manipulation</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
 
-    <name>image-manipulation</name>
+    <name>initialImage-manipulation</name>
 
     <dependencies>
         <dependency>
