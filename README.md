@@ -1,5 +1,5 @@
 # Image manipulation
-Simple ui application demonstrating basic initialImage manipulations
+Simple ui application demonstrating basic image manipulations.
 ### Running
 ```
 mvn clean install
