@@ -115,7 +115,7 @@ public class PositioningPanel extends JPanel {
     }
 
     public void moveUp() {
-        dy -= yStep();
+        dy += yStep();
         repaint();
     }
 
@@ -124,7 +124,7 @@ public class PositioningPanel extends JPanel {
     }
 
     public void moveLeft() {
-        dx -= xStep();
+        dx += xStep();
         repaint();
     }
 
@@ -139,12 +139,12 @@ public class PositioningPanel extends JPanel {
     }
 
     public void moveRight() {
-        dx += xStep();
+        dx -= xStep();
         repaint();
     }
 
     public void moveDown() {
-        dy += yStep();
+        dy -= yStep();
         repaint();
     }
 
